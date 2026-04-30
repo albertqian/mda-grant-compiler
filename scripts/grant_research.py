@@ -237,16 +237,16 @@ def build_email_html(new_grants: list[dict], today_str: str) -> str:
             <span style="margin-top:4px;display:inline-block;">{badge}</span>
             {source_note}
           </td>
-          <td style="padding:14px 12px;border-bottom:1px solid #f0e6ec;font-size:14px;white-space:nowrap;">
+          <td style="padding:14px 8px;border-bottom:1px solid #f0e6ec;font-size:12px;white-space:nowrap;width:80px;">
             {g['amount']}
           </td>
-          <td style="padding:14px 12px;border-bottom:1px solid #f0e6ec;font-size:14px;white-space:nowrap;">
+          <td style="padding:14px 8px;border-bottom:1px solid #f0e6ec;font-size:12px;white-space:nowrap;width:80px;">
             {g['deadline']}
           </td>
-          <td style="padding:14px 12px;border-bottom:1px solid #f0e6ec;font-size:13px;color:#444;line-height:1.5;">
+          <td style="padding:14px 12px;border-bottom:1px solid #f0e6ec;font-size:11px;color:#555;line-height:1.5;width:260px;">
             {g['fit_reason']}
           </td>
-          <td style="padding:14px 12px;border-bottom:1px solid #f0e6ec;font-size:13px;">
+          <td style="padding:14px 8px;border-bottom:1px solid #f0e6ec;font-size:12px;width:50px;">
             {link_cell}
           </td>
         </tr>"""
@@ -273,10 +273,10 @@ def build_email_html(new_grants: list[dict], today_str: str) -> str:
         <thead>
           <tr style="background:{BRAND_COLOR};color:white;">
             <th style="padding:12px;text-align:left;font-size:13px;min-width:180px;">Grant / Funder</th>
-            <th style="padding:12px;text-align:left;font-size:13px;min-width:100px;">Amount</th>
-            <th style="padding:12px;text-align:left;font-size:13px;min-width:90px;">Deadline</th>
-            <th style="padding:12px;text-align:left;font-size:13px;">Why We're a Fit</th>
-            <th style="padding:12px;text-align:left;font-size:13px;">Link</th>
+            <th style="padding:12px 8px;text-align:left;font-size:13px;width:80px;">Amount</th>
+            <th style="padding:12px 8px;text-align:left;font-size:13px;width:80px;">Deadline</th>
+            <th style="padding:12px;text-align:left;font-size:13px;width:260px;">Why We're a Fit</th>
+            <th style="padding:12px 8px;text-align:left;font-size:13px;width:50px;">Link</th>
           </tr>
         </thead>
         <tbody>
