@@ -1,0 +1,46 @@
+name: Weekly Grant Research
+
+on:
+  schedule:
+    # Monday 11 AM PST = 19:00 UTC (standard time)
+    # Note: GitHub cron does not auto-adjust for DST.
+    # During PDT (Mar–Nov) this fires at 12 PM local — update to 18:00 if you want strict 11 AM year-round.
+    - cron: '0 19 * * 1'
+  workflow_dispatch: # Allows manual trigger for testing
+
+jobs:
+  research-grants:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to commit updated seen_grants.json back to the repo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic
+
+      - name: Run grant research script
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+        run: python scripts/grant_research.py
+
+      - name: Commit updated seen_grants.json
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add data/seen_grants.json
+          # Only commit if the file actually changed; [skip ci] prevents re-triggering this workflow
+          git diff --staged --quiet || git commit -m "chore: update seen grants [skip ci]"
+          git push
