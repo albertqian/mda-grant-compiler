@@ -15,6 +15,7 @@ import re
 import smtplib
 import hashlib
 import sys
+import time
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -46,122 +47,41 @@ Past grants received:
 Scale: Grassroots/emerging nonprofit; relevant to California and national funders.
 """
 
+GRANT_SOURCES = (
+    # SLO County & Central Coast
+    "cfslo.org, French Hospital Medical Center community benefit grants, "
+    "Arroyo Grande Regional Hospital community grants, Pacific Premier Bank community giving, "
+    # California statewide
+    "calwellness.org, blueshieldcafoundation.org, calendow.org, sierrahealth.org, "
+    "calfund.org, weingartfnd.org, "
+    # One national org — best fit for small grassroots Latina nonprofits
+    "hiponline.org"
+)
+
 SEARCH_PROMPT = f"""
-You are a grant research specialist. Your job is to find currently open grant
-opportunities for the nonprofit described below. You must search specific, authoritative
-sources — do not rely on general web results alone.
+Find currently open grants for this small grassroots nonprofit:
 
-{ORG_PROFILE}
+Mujeres de Acción — San Luis Obispo County, CA 501(c)(3)
+Mission: Empowering Latina women through health education, civic engagement, cultural pride, and community leadership.
+Programs: Latina health/mental health, immigrant family support (housing, navigation), civic engagement, Hispanic Heritage Festival, women's leadership, Children's Day events.
+Scale: Small/emerging nonprofit. Past grants: $1,250 (website), $12,400 (immigrant housing). Not a large or established NGO — prioritize funders that explicitly support grassroots or emerging organizations.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-STEP 1 — SEARCH THESE SOURCES IN ORDER
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Search ONLY these sources in this order:
+1. SLO County & Central Coast: cfslo.org, French Hospital Medical Center community grants, Arroyo Grande Regional Hospital grants, Pacific Premier Bank (Central Coast giving)
+2. California statewide: calwellness.org, blueshieldcafoundation.org, calendow.org, sierrahealth.org, calfund.org, weingartfnd.org
+3. National (grassroots Latina focus only): hiponline.org
 
-Search each of the following databases and funder websites. Use the web_search tool
-with targeted queries for each source (e.g. "site:cfslo.org grants open 2025",
-"California Wellness Foundation open grants Latina health 2025").
+Topic focus: Latina/Hispanic women's health, immigrant support, civic engagement, cultural programs, women's leadership, health equity.
 
-TIER 1 — SLO COUNTY & CENTRAL COAST (highest priority):
-  • Community Foundation San Luis Obispo County — cfslo.org
-  • Monterey Peninsula Foundation
-  • Dignity Health grants (French Hospital Medical Center, Arroyo Grande)
-  • Pacific Premier Bank Community Giving (Central Coast)
-  • Rabobank Foundation (Central Valley/Coast)
+Rules:
+- Only grants currently open or opening within 60 days
+- Only include grants realistic for a small emerging nonprofit — skip anything requiring multi-year budgets, audited financials, or large organizational infrastructure
+- Do not fabricate amounts, deadlines, or URLs — use "Varies" or "Not listed" if unknown
 
-TIER 2 — CALIFORNIA STATEWIDE:
-  • The California Wellness Foundation — calwellness.org
-  • Blue Shield of California Foundation — blueshieldcafoundation.org
-  • The California Endowment — calendow.org
-  • Sierra Health Foundation — sierrahealth.org
-  • Weingart Foundation — weingartfnd.org
-  • S.D. Bechtel Jr. Foundation
-  • Herb Alpert Foundation (arts + youth)
-  • California Community Foundation — calfund.org
-  • LA2050 (if program has statewide reach) — la2050.org
-  • CalNonprofits listings — calnonprofits.org
+Return ONLY a JSON array, no markdown, no preamble:
+[{{"name":"...","funder":"...","amount":"...","deadline":"MM/DD/YYYY or Rolling or Not listed","location_scope":"SLO County|California|National","source":"website found on","url":"...","fit_reason":"2-3 sentences specific to MDA's programs, scale, and demographics"}}]
 
-TIER 3 — NATIONAL (Hispanic/Latina focus):
-  • Hispanics in Philanthropy — hiponline.org
-  • Hispanic Foundation of Silicon Valley — hfsv.org
-  • UnidosUS (formerly NCLR) — unidosus.org
-  • National Latina Institute for Reproductive Justice
-  • Ms. Foundation for Women — forwomen.org
-  • Women's Funding Network — wfnet.org
-  • Avon Foundation for Women
-  • Marguerite Casey Foundation — caseygrants.org
-
-TIER 4 — NATIONAL (health equity / immigrant support):
-  • Robert Wood Johnson Foundation — rwjf.org
-  • W.K. Kellogg Foundation — wkkf.org
-  • Kaiser Permanente Community Benefit Grants
-  • The Kresge Foundation — kresge.org
-  • Annie E. Casey Foundation — aecf.org
-  • Ford Foundation — fordfoundation.org
-  • New World Foundation
-  • Tides Foundation — tides.org
-
-TIER 5 — GRANT DATABASES (search for relevant open listings):
-  • Candid / Foundation Directory — candid.org/find-funding
-  • GrantWatch — grantwatch.com (search "Latina", "Hispanic women", "immigrant", "California")
-  • Grants.gov — grants.gov (federal grants; search CFDA areas 93 and 84)
-  • GrantStation — grantstation.com
-  • Instrumentl — instrumentl.com/browse-grants
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-STEP 2 — LOCATION PREFERENCE RULES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-When ranking or selecting grants to include, apply this priority order:
-  1. SLO County or Central Coast California (highest preference)
-  2. California statewide
-  3. National (U.S.-wide)
-  4. International (include only if highly relevant and no better options exist)
-
-Always include a "location_scope" field indicating which tier applies.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-STEP 3 — TOPIC FOCUS AREAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Only surface grants relevant to at least one of these:
-  1. Latina / Hispanic women's health and wellness
-  2. Immigrant and undocumented family support (housing, navigation)
-  3. Civic engagement and voter education
-  4. Cultural preservation and heritage programming
-  5. Women's leadership development
-  6. Mental health access for communities of color
-  7. Health equity and social determinants of health
-  8. Grassroots/emerging nonprofits (small org capacity building)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-STEP 4 — STRICT REQUIREMENTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  • Only include grants CURRENTLY OPEN or opening within the next 60 days.
-  • Do NOT fabricate deadlines, amounts, or URLs. Use "Not listed" or "Varies" when unknown.
-  • Do NOT include grants that explicitly exclude organizations of MDA's size or geography.
-  • Verify each grant's open status before including it.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-OUTPUT FORMAT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Return ONLY a valid JSON array — no markdown fences, no preamble, no trailing text.
-Each element must match this exact schema:
-
-{{
-  "name": "Full grant name",
-  "funder": "Name of the funding organization",
-  "amount": "Dollar amount or range (e.g. '$5,000–$25,000') or 'Varies'",
-  "deadline": "MM/DD/YYYY or 'Rolling' or 'Not listed'",
-  "location_scope": "SLO County" | "California" | "National" | "International",
-  "source": "Which database or funder website this was found on",
-  "url": "Direct URL to the grant page, or empty string if unavailable",
-  "fit_reason": "2–3 specific sentences on why Mujeres de Acción is a strong fit. Reference the org's actual programs, demographics, and geography."
-}}
-
-Return between 5 and 12 grants. Prioritize quality and geographic relevance over volume.
-Sort results: SLO County grants first, then California, then National, then International.
+Return 5-8 grants sorted: SLO County first, then California, then National.
 """
 
 # ── State management ───────────────────────────────────────────────────────────
@@ -193,12 +113,23 @@ def search_grants() -> list[dict]:
 
     print("Searching for grants via Anthropic API + web search...")
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=4096,
-        tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 15}],
-        messages=[{"role": "user", "content": SEARCH_PROMPT}],
-    )
+    # Retry up to 3 times with exponential backoff on rate limit errors
+    max_attempts = 3
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=4096,
+                tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 8}],
+                messages=[{"role": "user", "content": SEARCH_PROMPT}],
+            )
+            break  # Success — exit retry loop
+        except anthropic.RateLimitError as e:
+            if attempt == max_attempts:
+                raise
+            wait = 60 * attempt  # 60s, then 120s
+            print(f"Rate limit hit (attempt {attempt}/{max_attempts}). Waiting {wait}s...")
+            time.sleep(wait)
 
     # Debug: log block types and stop reason to help diagnose future issues
     block_types = [getattr(b, "type", "unknown") for b in response.content]
@@ -213,7 +144,6 @@ def search_grants() -> list[dict]:
             raw_text += block.text
 
     if not raw_text.strip():
-        # Dump full response for debugging before failing
         print("ERROR: No text blocks found in response. Full content dump:")
         for i, block in enumerate(response.content):
             print(f"  Block {i}: type={getattr(block, 'type', '?')} "
@@ -236,7 +166,7 @@ def search_grants() -> list[dict]:
     end = clean.rfind("]")
     if start != -1 and end != -1 and end > start:
         clean = clean[start : end + 1]
-    
+
     if not clean:
         raise ValueError(f"Could not locate a JSON array in the response text:\n{raw_text[:500]}")
 
