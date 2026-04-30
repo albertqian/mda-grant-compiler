@@ -11,6 +11,7 @@ by the GitHub Actions workflow after each run.
 import anthropic
 import json
 import os
+import re
 import smtplib
 import hashlib
 import sys
@@ -193,28 +194,51 @@ def search_grants() -> list[dict]:
     print("Searching for grants via Anthropic API + web search...")
 
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-6",
         max_tokens=4096,
-        tools=[{"type": "web_search_20250305", "name": "web_search"}],
+        tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 15}],
         messages=[{"role": "user", "content": SEARCH_PROMPT}],
     )
 
-    # Collect all text blocks from the response
+    # Debug: log block types and stop reason to help diagnose future issues
+    block_types = [getattr(b, "type", "unknown") for b in response.content]
+    print(f"Stop reason: {response.stop_reason}")
+    print(f"Response block types: {block_types}")
+
+    # Collect all text blocks — web search results arrive as separate block types;
+    # the final JSON answer will be in a "text" block at the end.
     raw_text = ""
     for block in response.content:
         if block.type == "text":
             raw_text += block.text
 
     if not raw_text.strip():
-        raise ValueError("Anthropic API returned an empty text response.")
+        # Dump full response for debugging before failing
+        print("ERROR: No text blocks found in response. Full content dump:")
+        for i, block in enumerate(response.content):
+            print(f"  Block {i}: type={getattr(block, 'type', '?')} "
+                  f"text_preview={str(getattr(block, 'text', ''))[:120]}")
+        raise ValueError(
+            f"Anthropic API returned no text blocks. "
+            f"stop_reason={response.stop_reason}, block_types={block_types}"
+        )
 
-    # Strip markdown fences if the model wrapped the JSON anyway
+    # Robustly extract the JSON array even if the model added preamble/postamble
     clean = raw_text.strip()
-    if clean.startswith("```"):
-        lines = clean.splitlines()
-        # Drop first and last fence lines
-        inner = [l for l in lines if not l.strip().startswith("```")]
-        clean = "\n".join(inner).strip()
+
+    # Strip markdown fences (```json ... ``` or ``` ... ```)
+    fence_match = re.search(r"```(?:json)?\s*([\s\S]*?)```", clean)
+    if fence_match:
+        clean = fence_match.group(1).strip()
+
+    # Find the outermost [ ... ] in case there's any remaining prose
+    start = clean.find("[")
+    end = clean.rfind("]")
+    if start != -1 and end != -1 and end > start:
+        clean = clean[start : end + 1]
+    
+    if not clean:
+        raise ValueError(f"Could not locate a JSON array in the response text:\n{raw_text[:500]}")
 
     grants = json.loads(clean)
 
