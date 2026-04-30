@@ -298,8 +298,10 @@ def send_email(new_grants: list[dict]) -> None:
     from_addr = os.environ["EMAIL_FROM"]
     to_addr = os.environ["EMAIL_TO"]
     password = os.environ["EMAIL_PASSWORD"]
-    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+    smtp_host = os.environ.get("SMTP_HOST", "").strip() or "smtp.gmail.com"
+    smtp_port = int(os.environ.get("SMTP_PORT", "").strip() or "587")
+
+    to_addrs = [addr.strip() for addr in os.environ["EMAIL_TO"].split(",")]
 
     today_str = datetime.now().strftime("%B %d, %Y")
     count_label = f"{len(new_grants)} new grant(s)" if new_grants else "No new grants"
@@ -310,15 +312,15 @@ def send_email(new_grants: list[dict]) -> None:
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = from_addr
-    msg["To"] = to_addr
+    msg["To"] = ", ".join(to_addrs)
     msg.attach(MIMEText(html_body, "html"))
 
-    print(f"Sending email to {to_addr} via {smtp_host}:{smtp_port}...")
+    print(f"Sending email to {to_addrs} via {smtp_host}:{smtp_port}...")
     with smtplib.SMTP(smtp_host, smtp_port) as server:
         server.ehlo()
         server.starttls()
         server.login(from_addr, password)
-        server.sendmail(from_addr, to_addr, msg.as_string())
+        server.sendmail(from_addr, to_addrs, msg.as_string())
 
     print("Email sent successfully.")
 
