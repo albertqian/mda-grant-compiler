@@ -363,5 +363,40 @@
     "name": "HIPGive Crowdfunding Campaign \u2014 Latino Nonprofit Fund",
     "funder": "Hispanics in Philanthropy / HIP (hipfunds.org / hiponline.org)",
     "first_seen": "2026-06-29T20:51:06.164769Z"
+  },
+  "224e94d6b904a588": {
+    "name": "One Community Fund \u2014 Immigrant-Serving Organizations Grant",
+    "funder": "Community Foundation San Luis Obispo County (cfsloco.org)",
+    "first_seen": "2026-07-06T20:55:04.233539Z"
+  },
+  "3877997dc18b7125": {
+    "name": "Women's Legacy Fund Grant",
+    "funder": "Community Foundation San Luis Obispo County (cfsloco.org)",
+    "first_seen": "2026-07-06T20:55:04.233554Z"
+  },
+  "fa098214d6ecb2e0": {
+    "name": "BUILD Capacity Building Grant",
+    "funder": "Community Foundation San Luis Obispo County (cfsloco.org)",
+    "first_seen": "2026-07-06T20:55:04.233558Z"
+  },
+  "a34febd456e93b33": {
+    "name": "Dignity Health Community Health Improvement Grant (FHMC/AGCH)",
+    "funder": "French Hospital Medical Center / Arroyo Grande Community Hospital (Dignity Health Central Coast)",
+    "first_seen": "2026-07-06T20:55:04.233562Z"
+  },
+  "b671ad8a7100cf53": {
+    "name": "California Wellness Foundation \u2014 Core Grants (calwellness.org)",
+    "funder": "The California Wellness Foundation",
+    "first_seen": "2026-07-06T20:55:04.233568Z"
+  },
+  "e8eb1c3ac2ab9f6d": {
+    "name": "Sierra Health Foundation \u2014 Health Leadership Program / Responsive Grants",
+    "funder": "Sierra Health Foundation (sierrahealth.org)",
+    "first_seen": "2026-07-06T20:55:04.233573Z"
+  },
+  "66e6beb54dbd980b": {
+    "name": "HIP (Hispanics in Philanthropy) \u2014 Latina & Civic Participation Funds",
+    "funder": "Hispanics in Philanthropy (hipfunds.org)",
+    "first_seen": "2026-07-06T20:55:04.233582Z"
   }
 }
