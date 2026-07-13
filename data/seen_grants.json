@@ -398,5 +398,45 @@
     "name": "HIP (Hispanics in Philanthropy) \u2014 Latina & Civic Participation Funds",
     "funder": "Hispanics in Philanthropy (hipfunds.org)",
     "first_seen": "2026-07-06T20:55:04.233582Z"
+  },
+  "554a432742ae2fa7": {
+    "name": "Community Foundation SLO County \u2014 General Grant Cycle",
+    "funder": "Community Foundation San Luis Obispo County (CFSLO)",
+    "first_seen": "2026-07-13T20:19:49.930514Z"
+  },
+  "cc6e47f51b764b78": {
+    "name": "One Community Fund \u2014 Immigrant Family Support Grants",
+    "funder": "Community Foundation San Luis Obispo County (CFSLO)",
+    "first_seen": "2026-07-13T20:19:49.930532Z"
+  },
+  "6bec822ee0b7f9e8": {
+    "name": "Dignity Health Community Health Improvement Grants (FHMC)",
+    "funder": "French Hospital Medical Center / Dignity Health Central Coast",
+    "first_seen": "2026-07-13T20:19:49.930537Z"
+  },
+  "d17e35d0a2a5488e": {
+    "name": "Dignity Health Community Grants (AGCH)",
+    "funder": "Arroyo Grande Community Hospital / Dignity Health Central Coast",
+    "first_seen": "2026-07-13T20:19:49.930541Z"
+  },
+  "aa5048ca8ab101d1": {
+    "name": "California Endowment \u2014 Rural Communities Fast-Track & Relationship Grants",
+    "funder": "The California Endowment (calendow.org)",
+    "first_seen": "2026-07-13T20:19:49.930546Z"
+  },
+  "c53aad9212beb779": {
+    "name": "Health Equity Grant Program",
+    "funder": "Blue Shield of California Foundation (blueshieldcafoundation.org)",
+    "first_seen": "2026-07-13T20:19:49.930550Z"
+  },
+  "8134d72f8be762bf": {
+    "name": "HIP Latino Civic Participation & Gender Justice Grants",
+    "funder": "Hispanics in Philanthropy / HIP (hipfunds.org)",
+    "first_seen": "2026-07-13T20:19:49.930555Z"
+  },
+  "b30449bb03b564e6": {
+    "name": "HIPGive Crowdfunding Campaign (Fundraising + Visibility Platform)",
+    "funder": "Hispanics in Philanthropy / HIPGive (hipgive.org)",
+    "first_seen": "2026-07-13T20:19:49.930563Z"
   }
 }
